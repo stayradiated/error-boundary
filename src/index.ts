@@ -1,11 +1,24 @@
 import { inspect } from 'util'
 
-const errorBoundary = async <T>(
-  fn: () => Promise<T | Error>,
-): Promise<T | Error> => {
+type ErrorBoundaryFn = {
+  <T>(fn: () => T | Error): T | Error
+  <T>(fn: () => Promise<T | Error>): Promise<T | Error>
+}
+
+const errorBoundary: ErrorBoundaryFn = (fn) => {
   try {
-    const value = await fn()
-    return value
+    const result = fn()
+    if (result instanceof Promise) {
+      return result.catch((error) => {
+        if (error instanceof Error) {
+          return error
+        }
+
+        return new Error(inspect(error))
+      })
+    }
+
+    return result
   } catch (error: unknown) {
     if (error instanceof Error) {
       return error
@@ -15,16 +28,29 @@ const errorBoundary = async <T>(
   }
 }
 
-const errorBoundarySync = <T>(fn: () => T | Error): T | Error => {
-  try {
-    return fn()
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return error
-    }
-
-    return new Error(inspect(error))
-  }
+type ThrowIfErrorFn = {
+  <T>(value: T | Error): T
+  <T>(value: Promise<T | Error>): Promise<T>
 }
 
-export { errorBoundary, errorBoundarySync }
+const throwIfError: ThrowIfErrorFn = (value) => {
+  if (value instanceof Error) {
+    // eslint-disable-next-line fp/no-throw
+    throw value
+  }
+
+  if (value instanceof Promise) {
+    return value.then((resolvedValue) => {
+      if (resolvedValue instanceof Error) {
+        // eslint-disable-next-line fp/no-throw
+        throw resolvedValue
+      }
+
+      return resolvedValue
+    })
+  }
+
+  return value
+}
+
+export { errorBoundary, throwIfError }

@@ -16,12 +16,14 @@ npm install --save @stayradiated/error-boundary
 ## API
 
 - `errorBoundary<T>(fn: () => Promise<T>): Promise<T|Error>`
-- `errorBoundarySync<T>(fn: () => T): T|Error`
+- `errorBoundary<T>(fn: () => T): T|Error`
+- `throwIfError<T>(Promise<T|Error>): Promise<T>`
+- `throwIfError<T>(value: T|Error): T`
 
 ## Usage
 
 ```javascript
-const { errorBoundarySync } = await import('@stayradiated/error-boundary')
+const { errorBoundary} = await import('@stayradiated/error-boundary')
 
 const mayThrow = () => {
   if (Math.random() > 0.5) {
@@ -31,7 +33,7 @@ const mayThrow = () => {
   }
 }
 
-const valueOrError = errorBoundarySync(() => mayThrow())
+const valueOrError = errorBoundary(() => mayThrow())
 
 if (valueOrError instanceof Error) {
   // explicititly handle error
