@@ -46,7 +46,7 @@ if (valueOrError instanceof Error) {
 }
 ```
 
-```
+```javascript
 const { errorListBoundary} = await import('@stayradiated/error-boundary')
 
 const results = await errorListBoundary(Promise.all(
