@@ -15,8 +15,10 @@ npm install --save @stayradiated/error-boundary
 
 ## API
 
-- `errorBoundary<T>(fn: () => Promise<T>): Promise<T|Error>`
-- `errorBoundary<T>(fn: () => T): T|Error`
+- `errorBoundary<T>(fn: () => Promise<T|Error>): Promise<T|Error>`
+- `errorBoundary<T>(fn: () => T|Error): T|Error`
+- `errorListBoundary<T>(fn: () => Promise<Array<T|Error>>): Promise<T[]|Error>`
+- `errorListBoundary<T>(fn: () => Array<T|Error>): T[]|Error`
 - `throwIfError<T>(Promise<T|Error>): Promise<T>`
 - `throwIfError<T>(value: T|Error): T`
 
@@ -41,6 +43,21 @@ if (valueOrError instanceof Error) {
 } else{
   // handle result
   console.log(valueOrError)
+}
+```
+
+```
+const { errorListBoundary} = await import('@stayradiated/error-boundary')
+
+const results = await errorListBoundary(Promise.all(
+  jobs.map(async (item) => {
+    return runJob(item)
+  })
+))
+if (results instanceof Error) {
+  const error = results
+  logError(error)
+  return
 }
 ```
 
