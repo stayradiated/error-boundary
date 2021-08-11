@@ -37,7 +37,7 @@ test('errorListBoundary: should return list (sync)', (t) => {
 test('errorListBoundary: should return error (sync)', (t) => {
   const list = ['a', new Error('Fail A'), 'b', 'c', new Error('Fail B')]
   const value = errorListBoundary(() => list)
-  t.deepEqual(value, new Error('Fail A\nFail B'))
+  t.deepEqual(value, new Error('0. Fail A\n1. Fail B'))
 })
 
 test('errorListBoundary: should return list (async)', async (t) => {
@@ -49,7 +49,7 @@ test('errorListBoundary: should return list (async)', async (t) => {
 test('errorListBoundary: should return error (async)', async (t) => {
   const list = ['a', new Error('Fail A'), 'b', 'c', new Error('Fail B')]
   const value = await errorListBoundary(async () => list)
-  t.deepEqual(value, new Error('Fail A\nFail B'))
+  t.deepEqual(value, new Error('0. Fail A\n1. Fail B'))
 })
 
 test('errorListBoundary: should return error (Promise.all)', async (t) => {
@@ -65,7 +65,7 @@ test('errorListBoundary: should return error (Promise.all)', async (t) => {
       }),
     ),
   )
-  t.deepEqual(value, new Error(`-1 is not >= 0\n-2 is not >= 0`))
+  t.deepEqual(value, new Error(`0. -1 is not >= 0\n1. -2 is not >= 0`))
 })
 
 test('throwIfError: should throw for error values', (t) => {

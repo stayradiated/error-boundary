@@ -9,7 +9,9 @@ function asError(error: unknown): Error {
 }
 
 function joinErrors(errors: Error[]): Error {
-  return new Error(errors.map((error) => error.message).join('\n'))
+  return new Error(
+    errors.map((error, index) => `${index}. ${error.message}`).join('\n'),
+  )
 }
 
 function listOrError<T>(list: Array<T | Error>): T[] | Error {
