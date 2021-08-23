@@ -1,23 +1,43 @@
-import { inspect } from 'util'
+import {
+  BetterError,
+  BetterErrorConstructorArg,
+} from '@northscaler/better-error'
+
+// eslint-disable-next-line fp/no-class
+class MultiError extends BetterError {
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor(arg?: BetterErrorConstructorArg) {
+    super(arg)
+  }
+}
 
 function asError(error: unknown): Error {
   if (error instanceof Error) {
     return error
   }
 
-  return new Error(inspect(error))
-}
+  if (typeof error === 'string') {
+    return new Error(error)
+  }
 
-function joinErrors(errors: Error[]): Error {
-  return new Error(
-    errors.map((error, index) => `${index}. ${error.message}`).join('\n'),
-  )
+  try {
+    return new Error(`Unexpected error with value: ${JSON.stringify(error)}"`)
+  } catch {
+    return new Error('Unexpected error with unknown value.')
+  }
 }
 
 function listOrError<T>(list: Array<T | Error>): T[] | Error {
   const errors = list.filter((item) => item instanceof Error) as Error[]
+  if (errors.length === 1) {
+    return errors[0]!
+  }
+
   if (errors.length > 0) {
-    return joinErrors(errors)
+    return new MultiError({
+      message: `Caught ${errors.length} errors`,
+      cause: errors,
+    })
   }
 
   return list as T[]
