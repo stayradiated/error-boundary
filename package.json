@@ -6,6 +6,7 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
+    "prepublish": "pnpm run build",
     "tidy": "xo --fix",
     "build": "del-cli dist && tsc",
     "test": "ava"
