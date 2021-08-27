@@ -110,4 +110,4 @@ const throwIfError: ThrowIfErrorFn = (value) => {
   return value
 }
 
-export { errorBoundary, errorListBoundary, throwIfError }
+export { errorBoundary, errorListBoundary, throwIfError, MultiError }
