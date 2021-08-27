@@ -9,9 +9,12 @@ type MultiErrorConstructorArg = BetterErrorConstructorArg & {
 
 // eslint-disable-next-line fp/no-class
 class MultiError extends BetterError {
+  override cause: Error[]
+
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(arg: MultiErrorConstructorArg) {
     super(arg)
+    this.cause = arg.cause
   }
 }
 
