@@ -3,10 +3,14 @@ import {
   BetterErrorConstructorArg,
 } from '@northscaler/better-error'
 
+type MultiErrorConstructorArg = BetterErrorConstructorArg & {
+  cause: Error[]
+}
+
 // eslint-disable-next-line fp/no-class
 class MultiError extends BetterError {
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-  constructor(arg?: BetterErrorConstructorArg) {
+  constructor(arg: MultiErrorConstructorArg) {
     super(arg)
   }
 }
