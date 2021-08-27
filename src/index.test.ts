@@ -35,10 +35,10 @@ test('errorListBoundary: should return list (sync)', (t) => {
 })
 
 test('errorListBoundary: should return error (sync)', (t) => {
-  const list = ['a', new Error('Fail A'), 'b', 'c', new Error('Fail B')]
+  const list = ['a', new Error('Fail A'), 'b', 'c']
   const value = errorListBoundary(() => list)
   t.like(value, {
-    message: 'E_MULTI: Caught 2 errors: [Fail A, Fail B]',
+    message: 'E_MULTI: Caught 1 error: [Fail A]',
   })
 })
 

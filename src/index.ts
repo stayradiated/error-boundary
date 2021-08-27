@@ -27,15 +27,11 @@ function asError(error: unknown): Error {
   }
 }
 
-function listOrError<T>(list: Array<T | Error>): T[] | Error {
+function listOrError<T>(list: Array<T | Error>): T[] | MultiError {
   const errors = list.filter((item) => item instanceof Error) as Error[]
-  if (errors.length === 1) {
-    return errors[0]!
-  }
-
   if (errors.length > 0) {
     return new MultiError({
-      message: `Caught ${errors.length} errors`,
+      message: `Caught ${errors.length} error${errors.length === 1 ? '' : 's'}`,
       cause: errors,
     })
   }
