@@ -89,8 +89,8 @@ function errorListBoundary<T>(
 }
 
 type ThrowIfErrorFn = {
-  <T>(value: T | Error): T
-  <T>(value: Promise<T | Error>): Promise<T>
+  <T>(value: T | Error): Exclude<T, Error>
+  <T>(value: Promise<T | Error>): Promise<Exclude<T, Error>>
 }
 
 const throwIfError: ThrowIfErrorFn = (value) => {
