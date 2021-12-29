@@ -2,7 +2,12 @@
 
 import test from 'ava'
 
-import { errorBoundary, errorListBoundary, throwIfError } from './index.js'
+import {
+  errorBoundary,
+  errorListBoundary,
+  throwIfError,
+  throwIfValue,
+} from './index.js'
 
 test('errorBoundary: should catch sync error', (t) => {
   const value = errorBoundary(() => {
@@ -100,4 +105,33 @@ test('throwIfError: should return for non-error async values', async (t) => {
   const value = {}
   const resolvedValue = await throwIfError(Promise.resolve(value))
   t.is(resolvedValue, value)
+})
+
+test('throwIfValue: should throw for error values', (t) => {
+  const error = throwIfValue(new Error('success'))
+  t.is(error.message, 'success')
+})
+
+test('throwIfValue: should return for async error values', async (t) => {
+  const error = await throwIfValue(Promise.reject(new Error('success')))
+  t.is(error.message, 'success')
+})
+
+test('throwIfValue: should throw for sync values', (t) => {
+  const value = {}
+  t.throws(
+    () => {
+      throwIfValue(value, 'should be an error')
+    },
+    {
+      message: 'should be an error',
+    },
+  )
+})
+
+test('throwIfValue: should throw for async values', async (t) => {
+  const value = Promise.resolve({})
+  await t.throwsAsync(throwIfValue(value, 'should be an error'), {
+    message: 'should be an error',
+  })
 })

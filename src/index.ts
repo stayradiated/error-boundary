@@ -11,9 +11,9 @@ type MultiErrorConstructorArg = BetterErrorConstructorArg & {
 class MultiError extends BetterError {
   override cause: Error[]
 
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(arg: MultiErrorConstructorArg) {
     super(arg)
+    // eslint-disable-next-line fp/no-this
     this.cause = arg.cause
   }
 }
@@ -113,4 +113,46 @@ const throwIfError: ThrowIfErrorFn = (value) => {
   return value
 }
 
-export { errorBoundary, errorListBoundary, throwIfError, MultiError }
+type ThrowIfValueFn = {
+  <T>(
+    value: T extends Promise<unknown> ? never : T | Error,
+    message?: string,
+  ): Error
+  <T>(value: Promise<T | Error>, message?: string): Promise<Error>
+}
+
+const throwIfValue: ThrowIfValueFn = (
+  value,
+  message = 'Expected value to be an error.',
+) => {
+  if (value instanceof Error) {
+    return value
+  }
+
+  if (value instanceof Promise) {
+    return value.then(
+      (resolvedValue) => {
+        if (resolvedValue instanceof Error) {
+          return resolvedValue
+        }
+
+        // eslint-disable-next-line fp/no-throw
+        throw new Error(message)
+      },
+      (error) => {
+        return asError(error)
+      },
+    )
+  }
+
+  // eslint-disable-next-line fp/no-throw
+  throw new Error(message)
+}
+
+export {
+  errorBoundary,
+  errorListBoundary,
+  throwIfError,
+  throwIfValue,
+  MultiError,
+}

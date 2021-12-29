@@ -21,6 +21,8 @@ npm install --save @stayradiated/error-boundary
 - `errorListBoundary<T>(fn: () => Array<T|Error>): T[]|Error`
 - `throwIfError<T>(Promise<T|Error>): Promise<T>`
 - `throwIfError<T>(value: T|Error): T`
+- `throwIfValue<T>(Promise<T|Error>): Promise<Error>`
+- `throwIfValue<T>(value: T|Error): Error`
 
 ## Usage
 
