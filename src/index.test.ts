@@ -79,17 +79,6 @@ test('errorListBoundary: should return error (Promise.all)', async (t) => {
   })
 })
 
-test('errorListBoundary: with custom mapItemToError function', (t) => {
-  const list = [{ value: 'a' }, { value: 'b' }, { value: new Error('Fail') }]
-  const value = errorListBoundary(
-    () => list,
-    (item) => (item.value instanceof Error ? item.value : undefined),
-  )
-  t.like(value, {
-    message: 'E_MULTI: Caught 1 error: [Fail]',
-  })
-})
-
 test('throwIfError: should throw for error values', (t) => {
   t.throws(
     () => {

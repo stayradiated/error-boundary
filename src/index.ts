@@ -34,17 +34,8 @@ function asError(error: unknown): Error {
   }
 }
 
-type MapItemToErrorFn<T> = (item: T) => Error | undefined
-const defaultMapItemToError = <T>(item: T) =>
-  item instanceof Error ? item : undefined
-
-function listOrError<T>(
-  list: T[],
-  mapItemToError: MapItemToErrorFn<T> = defaultMapItemToError,
-): T[] | MultiError {
-  const errors = list
-    .map((item) => mapItemToError(item))
-    .filter(Boolean) as Error[]
+function listOrError<T>(list: Array<T | Error>): T[] | MultiError {
+  const errors = list.filter((item) => item instanceof Error) as Error[]
   if (errors.length > 0) {
     return new MultiError({
       message: `Caught ${errors.length} error${errors.length === 1 ? '' : 's'}`,
@@ -52,7 +43,7 @@ function listOrError<T>(
     })
   }
 
-  return list
+  return list as T[]
 }
 
 type ErrorBoundarySyncFn<T> = () => T | Error
@@ -75,28 +66,23 @@ function errorBoundary<T>(
   }
 }
 
-type ErrorListBoundarySyncFn<T> = () => T[]
-type ErrorListBoundaryAsyncFn<T> = () => Promise<T[]>
+type ErrorListBoundarySyncFn<T> = () => Array<T | Error>
+type ErrorListBoundaryAsyncFn<T> = () => Promise<Array<T | Error>>
 
-function errorListBoundary<T>(
-  fn: ErrorListBoundarySyncFn<T>,
-  mapItemToError?: MapItemToErrorFn<T>,
-): T[] | Error
+function errorListBoundary<T>(fn: ErrorListBoundarySyncFn<T>): T[] | Error
 function errorListBoundary<T>(
   fn: ErrorListBoundaryAsyncFn<T>,
-  mapItemToError?: MapItemToErrorFn<T>,
 ): Promise<T[] | Error>
 function errorListBoundary<T>(
   fn: ErrorListBoundaryAsyncFn<T> | ErrorListBoundarySyncFn<T>,
-  mapItemToError?: MapItemToErrorFn<T>,
 ) {
   try {
     const list = fn()
     if (list instanceof Promise) {
-      return list.then((list) => listOrError(list, mapItemToError), asError)
+      return list.then(listOrError, asError)
     }
 
-    return listOrError(list, mapItemToError)
+    return listOrError(list)
   } catch (error: unknown) {
     return asError(error)
   }
