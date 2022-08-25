@@ -1,5 +1,3 @@
-/* eslint-disable fp/no-throw */
-
 import test from 'ava'
 
 import {

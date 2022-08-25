@@ -1,19 +1,15 @@
-import {
-  BetterError,
-  BetterErrorConstructorArg,
-} from '@northscaler/better-error'
+import type { BetterErrorConstructorArg } from '@northscaler/better-error'
+import { BetterError } from '@northscaler/better-error'
 
 type MultiErrorConstructorArg = BetterErrorConstructorArg & {
   cause: Error[]
 }
 
-// eslint-disable-next-line fp/no-class
 class MultiError extends BetterError {
   override cause: Error[]
 
   constructor(arg: MultiErrorConstructorArg) {
     super(arg)
-    // eslint-disable-next-line fp/no-this
     this.cause = arg.cause
   }
 }
@@ -46,7 +42,9 @@ function listOrError<T>(list: Array<T | Error>): T[] | MultiError {
   return list as T[]
 }
 
-type ErrorBoundarySyncFn<T> = () => T | Error
+type NotPromise<T> = T extends Promise<any> ? never : T
+
+type ErrorBoundarySyncFn<T> = () => NotPromise<T> | Error
 type ErrorBoundaryAsyncFn<T> = () => Promise<T | Error>
 
 function errorBoundary<T>(fn: ErrorBoundarySyncFn<T>): T | Error
@@ -66,7 +64,7 @@ function errorBoundary<T>(
   }
 }
 
-type ErrorListBoundarySyncFn<T> = () => Array<T | Error>
+type ErrorListBoundarySyncFn<T> = () => Array<NotPromise<T> | Error>
 type ErrorListBoundaryAsyncFn<T> = () => Promise<Array<T | Error>>
 
 function errorListBoundary<T>(fn: ErrorListBoundarySyncFn<T>): T[] | Error
@@ -89,20 +87,18 @@ function errorListBoundary<T>(
 }
 
 type ThrowIfErrorFn = {
-  <T>(value: T | Error): Exclude<T, Error>
+  <T>(value: NotPromise<T> | Error): Exclude<T, Error>
   <T>(value: Promise<T | Error>): Promise<Exclude<T, Error>>
 }
 
 const throwIfError: ThrowIfErrorFn = (value) => {
   if (value instanceof Error) {
-    // eslint-disable-next-line fp/no-throw
     throw value
   }
 
   if (value instanceof Promise) {
     return value.then((resolvedValue) => {
       if (resolvedValue instanceof Error) {
-        // eslint-disable-next-line fp/no-throw
         throw resolvedValue
       }
 
@@ -115,7 +111,7 @@ const throwIfError: ThrowIfErrorFn = (value) => {
 
 type ThrowIfValueFn = {
   <T>(
-    value: T extends Promise<unknown> ? never : T | Error,
+    value: T extends Promise<any> ? never : T | Error,
     message?: string,
   ): Error
   <T>(value: Promise<T | Error>, message?: string): Promise<Error>
@@ -136,7 +132,6 @@ const throwIfValue: ThrowIfValueFn = (
           return resolvedValue
         }
 
-        // eslint-disable-next-line fp/no-throw
         throw new Error(message)
       },
       (error) => {
@@ -145,7 +140,6 @@ const throwIfValue: ThrowIfValueFn = (
     )
   }
 
-  // eslint-disable-next-line fp/no-throw
   throw new Error(message)
 }
 
