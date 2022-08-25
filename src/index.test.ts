@@ -2,20 +2,24 @@ import test from 'ava'
 
 import {
   errorBoundary,
+  errorBoundarySync,
   errorListBoundary,
+  errorListBoundarySync,
   throwIfError,
+  throwIfErrorSync,
   throwIfValue,
+  throwIfValueSync,
 } from './index.js'
 
-test('errorBoundary: should catch sync error', (t) => {
-  const value = errorBoundary(() => {
+test('errorBoundarySync: should catch error', (t) => {
+  const value = errorBoundarySync(() => {
     throw new Error('hello world')
   })
   t.true(value instanceof Error)
 })
 
-test('errorBoundary: should return sync value', (t) => {
-  const value = errorBoundary(() => 'value')
+test('errorBoundarySync: should return value', (t) => {
+  const value = errorBoundarySync(() => 'value')
   t.is(value, 'value')
 })
 
@@ -31,27 +35,27 @@ test('errorBoundary: should return value', async (t) => {
   t.is(value, 'value')
 })
 
-test('errorListBoundary: should return list (sync)', (t) => {
+test('errorListBoundarySync: should return list', (t) => {
   const list = ['a', 'b', 'c']
-  const value = errorListBoundary(() => list)
+  const value = errorListBoundarySync(() => list)
   t.is(value, list)
 })
 
-test('errorListBoundary: should return error (sync)', (t) => {
+test('errorListBoundarySync: should return error', (t) => {
   const list = ['a', new Error('Fail A'), 'b', 'c']
-  const value = errorListBoundary(() => list)
+  const value = errorListBoundarySync(() => list)
   t.like(value, {
     message: 'E_MULTI: Caught 1 error: [Fail A]',
   })
 })
 
-test('errorListBoundary: should return list (async)', async (t) => {
+test('errorListBoundary: should return list', async (t) => {
   const list = ['a', 'b', 'c']
   const value = await errorListBoundary(async () => list)
   t.is(value, list)
 })
 
-test('errorListBoundary: should return error (async)', async (t) => {
+test('errorListBoundary: should return error', async (t) => {
   const list = ['a', new Error('Fail A'), 'b', 'c', new Error('Fail B')]
   const value = await errorListBoundary(async () => list)
   t.like(value, {
@@ -77,10 +81,10 @@ test('errorListBoundary: should return error (Promise.all)', async (t) => {
   })
 })
 
-test('throwIfError: should throw for error values', (t) => {
+test('throwIfErrorSync: should throw for error values', (t) => {
   t.throws(
     () => {
-      throwIfError(new Error('fail'))
+      throwIfErrorSync(new Error('fail'))
     },
     {
       message: 'fail',
@@ -94,9 +98,9 @@ test('throwIfError: should throw for async error values', async (t) => {
   })
 })
 
-test('throwIfError: should return for non-error values', (t) => {
+test('throwIfErrorSync: should return for non-error values', (t) => {
   const value = {}
-  t.is(throwIfError(value), value)
+  t.is(throwIfErrorSync(value), value)
 })
 
 test('throwIfError: should return for non-error async values', async (t) => {
@@ -105,8 +109,8 @@ test('throwIfError: should return for non-error async values', async (t) => {
   t.is(resolvedValue, value)
 })
 
-test('throwIfValue: should throw for error values', (t) => {
-  const error = throwIfValue(new Error('success'))
+test('throwIfValueSync: should throw for error values', (t) => {
+  const error = throwIfValueSync(new Error('success'))
   t.is(error.message, 'success')
 })
 
@@ -115,11 +119,11 @@ test('throwIfValue: should return for async error values', async (t) => {
   t.is(error.message, 'success')
 })
 
-test('throwIfValue: should throw for sync values', (t) => {
+test('throwIfValueSync: should throw for sync values', (t) => {
   const value = {}
   t.throws(
     () => {
-      throwIfValue(value, 'should be an error')
+      throwIfValueSync(value, 'should be an error')
     },
     {
       message: 'should be an error',

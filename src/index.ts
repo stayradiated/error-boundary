@@ -42,111 +42,108 @@ function listOrError<T>(list: Array<T | Error>): T[] | MultiError {
   return list as T[]
 }
 
-type NotPromise<T> = T extends Promise<any> ? never : T
-
-type ErrorBoundarySyncFn<T> = () => NotPromise<T> | Error
+type ErrorBoundarySyncFn<T> = () => T | Error
 type ErrorBoundaryAsyncFn<T> = () => Promise<T | Error>
 
-function errorBoundary<T>(fn: ErrorBoundarySyncFn<T>): T | Error
-function errorBoundary<T>(fn: ErrorBoundaryAsyncFn<T>): Promise<T | Error>
-function errorBoundary<T>(
-  fn: ErrorBoundarySyncFn<T> | ErrorBoundaryAsyncFn<T>,
-) {
+const errorBoundarySync = <T>(fn: ErrorBoundarySyncFn<T>): T | Error => {
   try {
-    const result = fn()
-    if (result instanceof Promise) {
-      return result.catch(asError)
-    }
-
-    return result
+    return fn()
   } catch (error: unknown) {
     return asError(error)
   }
 }
 
-type ErrorListBoundarySyncFn<T> = () => Array<NotPromise<T> | Error>
-type ErrorListBoundaryAsyncFn<T> = () => Promise<Array<T | Error>>
+const errorBoundary = async <T>(
+  fn: ErrorBoundaryAsyncFn<T>,
+): Promise<T | Error> => {
+  try {
+    return await fn().catch(asError)
+  } catch (error: unknown) {
+    return asError(error)
+  }
+}
 
-function errorListBoundary<T>(fn: ErrorListBoundarySyncFn<T>): T[] | Error
-function errorListBoundary<T>(
-  fn: ErrorListBoundaryAsyncFn<T>,
-): Promise<T[] | Error>
-function errorListBoundary<T>(
-  fn: ErrorListBoundaryAsyncFn<T> | ErrorListBoundarySyncFn<T>,
-) {
+type ErrorListBoundaryAsyncFn<T> = () => Promise<Array<T | Error>>
+type ErrorListBoundarySyncFn<T> = () => Array<T | Error>
+
+const errorListBoundarySync = <T>(
+  fn: ErrorListBoundarySyncFn<T>,
+): T[] | Error => {
   try {
     const list = fn()
-    if (list instanceof Promise) {
-      return list.then(listOrError, asError)
-    }
-
     return listOrError(list)
   } catch (error: unknown) {
     return asError(error)
   }
 }
 
-type ThrowIfErrorFn = {
-  <T>(value: NotPromise<T> | Error): Exclude<T, Error>
-  <T>(value: Promise<T | Error>): Promise<Exclude<T, Error>>
+const errorListBoundary = async <T>(
+  fn: ErrorListBoundaryAsyncFn<T>,
+): Promise<T[] | Error> => {
+  try {
+    return await fn().then(listOrError, asError)
+  } catch (error: unknown) {
+    return asError(error)
+  }
 }
 
-const throwIfError: ThrowIfErrorFn = (value) => {
+const throwIfErrorSync = <T>(value: T | Error): Exclude<T, Error> => {
   if (value instanceof Error) {
     throw value
   }
 
-  if (value instanceof Promise) {
-    return value.then((resolvedValue) => {
-      if (resolvedValue instanceof Error) {
-        throw resolvedValue
-      }
-
-      return resolvedValue
-    })
-  }
-
-  return value
+  return value as Exclude<T, Error>
 }
 
-type ThrowIfValueFn = {
-  <T>(
-    value: T extends Promise<any> ? never : T | Error,
-    message?: string,
-  ): Error
-  <T>(value: Promise<T | Error>, message?: string): Promise<Error>
+const throwIfError = async <T>(
+  value: Promise<T | Error>,
+): Promise<Exclude<T, Error>> => {
+  return value.then((resolvedValue) => {
+    if (resolvedValue instanceof Error) {
+      throw resolvedValue
+    }
+
+    return resolvedValue as Exclude<T, Error>
+  })
 }
 
-const throwIfValue: ThrowIfValueFn = (
-  value,
+const throwIfValueSync = <T>(
+  value: T | Error,
   message = 'Expected value to be an error.',
-) => {
+): Error => {
   if (value instanceof Error) {
     return value
-  }
-
-  if (value instanceof Promise) {
-    return value.then(
-      (resolvedValue) => {
-        if (resolvedValue instanceof Error) {
-          return resolvedValue
-        }
-
-        throw new Error(message)
-      },
-      (error) => {
-        return asError(error)
-      },
-    )
   }
 
   throw new Error(message)
 }
 
+const throwIfValue = async <T>(
+  value: Promise<T | Error>,
+  message = 'Expected value to be an error.',
+): Promise<Error> => {
+  return value.then(
+    (resolvedValue) => {
+      if (resolvedValue instanceof Error) {
+        return resolvedValue
+      }
+
+      throw new Error(message)
+    },
+    (error) => {
+      return asError(error)
+    },
+  )
+}
+
 export {
   errorBoundary,
+  errorBoundarySync,
   errorListBoundary,
+  errorListBoundarySync,
   throwIfError,
+  throwIfErrorSync,
   throwIfValue,
+  throwIfValueSync,
   MultiError,
 }
