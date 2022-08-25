@@ -1,6 +1,6 @@
 {
   "name": "@stayradiated/error-boundary",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Catch and return errors as values",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
