@@ -1,6 +1,6 @@
 {
   "name": "@stayradiated/error-boundary",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Catch and return errors as values",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -35,7 +35,9 @@
   "__comment": "The following configs are managed by `npx @stayradiated/jsconfig`",
   "ava": {
     "verbose": true,
-    "files": ["./dist/cjs/**/*.test.js"]
+    "files": [
+      "./dist/cjs/**/*.test.js"
+    ]
   },
   "xo": {
     "space": true,
