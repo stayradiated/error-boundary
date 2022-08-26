@@ -1,19 +1,3 @@
-import type { BetterErrorConstructorArg } from '@northscaler/better-error'
-import { BetterError } from '@northscaler/better-error'
-
-type MultiErrorConstructorArg = BetterErrorConstructorArg & {
-  cause: Error[]
-}
-
-class MultiError extends BetterError {
-  override cause: Error[]
-
-  constructor(arg: MultiErrorConstructorArg) {
-    super(arg)
-    this.cause = arg.cause
-  }
-}
-
 function asError(error: unknown): Error {
   if (error instanceof Error) {
     return error
@@ -30,13 +14,14 @@ function asError(error: unknown): Error {
   }
 }
 
-function listOrError<T>(list: Array<T | Error>): T[] | MultiError {
+function listOrError<T>(list: Array<T | Error>): T[] | AggregateError {
   const errors = list.filter((item) => item instanceof Error) as Error[]
   if (errors.length > 0) {
-    return new MultiError({
-      message: `Caught ${errors.length} error${errors.length === 1 ? '' : 's'}`,
-      cause: errors,
-    })
+    const errorMessageList = errors.map((error) => error.message)
+    const message = `E_MULTI: Caught ${errors.length} ${
+      errors.length === 1 ? 'error' : 'errors'
+    }: [${errorMessageList.join(', ')}]`
+    return new AggregateError(errors, message)
   }
 
   return list as T[]
@@ -87,53 +72,21 @@ const errorListBoundary = async <T>(
   }
 }
 
-const throwIfErrorSync = <T>(value: T | Error): Exclude<T, Error> => {
+function assertError<T>(
+  value: T | Error,
+  message = 'Expected value to be an error.',
+): asserts value is Error {
+  if (!(value instanceof Error)) {
+    throw new TypeError(message)
+  }
+}
+
+function assertOk<T>(
+  value: T | Error,
+): asserts value is T extends Error ? never : T {
   if (value instanceof Error) {
     throw value
   }
-
-  return value as Exclude<T, Error>
-}
-
-const throwIfError = async <T>(
-  value: Promise<T | Error>,
-): Promise<Exclude<T, Error>> => {
-  return value.then((resolvedValue) => {
-    if (resolvedValue instanceof Error) {
-      throw resolvedValue
-    }
-
-    return resolvedValue as Exclude<T, Error>
-  })
-}
-
-const throwIfValueSync = <T>(
-  value: T | Error,
-  message = 'Expected value to be an error.',
-): Error => {
-  if (value instanceof Error) {
-    return value
-  }
-
-  throw new Error(message)
-}
-
-const throwIfValue = async <T>(
-  value: Promise<T | Error>,
-  message = 'Expected value to be an error.',
-): Promise<Error> => {
-  return value.then(
-    (resolvedValue) => {
-      if (resolvedValue instanceof Error) {
-        return resolvedValue
-      }
-
-      throw new Error(message)
-    },
-    (error) => {
-      return asError(error)
-    },
-  )
 }
 
 export {
@@ -141,9 +94,6 @@ export {
   errorBoundarySync,
   errorListBoundary,
   errorListBoundarySync,
-  throwIfError,
-  throwIfErrorSync,
-  throwIfValue,
-  throwIfValueSync,
-  MultiError,
+  assertError,
+  assertOk,
 }

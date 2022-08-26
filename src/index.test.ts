@@ -5,10 +5,8 @@ import {
   errorBoundarySync,
   errorListBoundary,
   errorListBoundarySync,
-  throwIfError,
-  throwIfErrorSync,
-  throwIfValue,
-  throwIfValueSync,
+  assertOk,
+  assertError,
 } from './index.js'
 
 test('errorBoundarySync: should catch error', (t) => {
@@ -81,59 +79,54 @@ test('errorListBoundary: should return error (Promise.all)', async (t) => {
   })
 })
 
-test('throwIfErrorSync: should throw for error values', (t) => {
+test('assertOk: should throw for error values', (t) => {
+  const eitherStringOrError = errorBoundarySync<string>(() => {
+    throw new Error('eitherStringOrError is an Error')
+  })
+
   t.throws(
     () => {
-      throwIfErrorSync(new Error('fail'))
+      assertOk(eitherStringOrError)
+      t.fail()
     },
     {
-      message: 'fail',
+      message: 'eitherStringOrError is an Error',
     },
   )
 })
 
-test('throwIfError: should throw for async error values', async (t) => {
-  await t.throwsAsync(throwIfError(Promise.reject(new Error('fail'))), {
-    message: 'fail',
+test('assertOk: should return for non-error values', (t) => {
+  const eitherStringOrError = errorBoundarySync<string>(() => {
+    return 'Success'
   })
+
+  assertOk(errorBoundarySync)
+
+  t.is(eitherStringOrError, 'Success')
 })
 
-test('throwIfErrorSync: should return for non-error values', (t) => {
-  const value = {}
-  t.is(throwIfErrorSync(value), value)
-})
+test('assertError: should throw for error values', (t) => {
+  const eitherStringOrError = errorBoundarySync<string>(() => {
+    return 'Success'
+  })
 
-test('throwIfError: should return for non-error async values', async (t) => {
-  const value = {}
-  const resolvedValue = await throwIfError(Promise.resolve(value))
-  t.is(resolvedValue, value)
-})
-
-test('throwIfValueSync: should throw for error values', (t) => {
-  const error = throwIfValueSync(new Error('success'))
-  t.is(error.message, 'success')
-})
-
-test('throwIfValue: should return for async error values', async (t) => {
-  const error = await throwIfValue(Promise.reject(new Error('success')))
-  t.is(error.message, 'success')
-})
-
-test('throwIfValueSync: should throw for sync values', (t) => {
-  const value = {}
   t.throws(
     () => {
-      throwIfValueSync(value, 'should be an error')
+      assertError(eitherStringOrError)
+      t.fail()
     },
     {
-      message: 'should be an error',
+      message: 'Expected value to be an error.',
     },
   )
 })
 
-test('throwIfValue: should throw for async values', async (t) => {
-  const value = Promise.resolve({})
-  await t.throwsAsync(throwIfValue(value, 'should be an error'), {
-    message: 'should be an error',
+test('assertError: should throw for sync values', (t) => {
+  const eitherStringOrError = errorBoundarySync<string>(() => {
+    throw new Error('eitherStringOrError is an Error')
   })
+
+  assertError(eitherStringOrError)
+
+  t.true(eitherStringOrError instanceof Error)
 })

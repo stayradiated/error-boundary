@@ -22,9 +22,6 @@
     "email": "george@czabania.com"
   },
   "license": "MIT",
-  "dependencies": {
-    "@northscaler/better-error": "0.1.0-dev.10"
-  },
   "devDependencies": {
     "@types/node": "18.7.13",
     "ava": "4.3.3",

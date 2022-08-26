@@ -16,18 +16,16 @@ npm install --save @stayradiated/error-boundary
 ## API
 
 - `errorBoundary<T>(fn: () => Promise<T|Error>): Promise<T|Error>`
-- `errorBoundary<T>(fn: () => T|Error): T|Error`
+- `errorBoundarySync<T>(fn: () => T|Error): T|Error`
 - `errorListBoundary<T>(fn: () => Promise<Array<T|Error>>): Promise<T[]|Error>`
-- `errorListBoundary<T>(fn: () => Array<T|Error>): T[]|Error`
-- `throwIfError<T>(Promise<T|Error>): Promise<T>`
-- `throwIfError<T>(value: T|Error): T`
-- `throwIfValue<T>(Promise<T|Error>): Promise<Error>`
-- `throwIfValue<T>(value: T|Error): Error`
+- `errorListBoundarySync<T>(fn: () => Array<T|Error>): T[]|Error`
+- `assertOk<T>(value: T | Error): asserts value is T extends Error ? never : T`
+- `assertError<T>(value: T | Error, errorMessage?: string): asserts value is Error`
 
 ## Usage
 
 ```javascript
-const { errorBoundary} = await import('@stayradiated/error-boundary')
+const { errorBoundarySync } = await import('@stayradiated/error-boundary')
 
 const mayThrow = () => {
   if (Math.random() > 0.5) {
@@ -37,7 +35,7 @@ const mayThrow = () => {
   }
 }
 
-const valueOrError = errorBoundary(() => mayThrow())
+const valueOrError = errorBoundarySync(() => mayThrow())
 
 if (valueOrError instanceof Error) {
   // explicititly handle error
@@ -49,7 +47,7 @@ if (valueOrError instanceof Error) {
 ```
 
 ```javascript
-const { errorListBoundary} = await import('@stayradiated/error-boundary')
+const { errorListBoundary } = await import('@stayradiated/error-boundary')
 
 const results = await errorListBoundary(Promise.all(
   jobs.map(async (item) => {
