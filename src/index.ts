@@ -94,6 +94,8 @@ export {
   errorBoundarySync,
   errorListBoundary,
   errorListBoundarySync,
+  listOrError,
+  asError,
   assertError,
   assertOk,
 }
