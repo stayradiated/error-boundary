@@ -1,14 +1,14 @@
 import { listOrError } from './list-or-error.js'
 import { asError } from './as-error.js'
 
-type ErrorListBoundaryAsyncFn<T> = () => Promise<Array<T | Error>>
-type ErrorListBoundarySyncFn<T> = () => Array<T | Error>
+type ErrorListBoundaryAsyncFunction<T> = () => Promise<Array<T | Error>>
+type ErrorListBoundarySyncFunction<T> = () => Array<T | Error>
 
 const errorListBoundarySync = <T>(
-  fn: ErrorListBoundarySyncFn<T>,
+  function_: ErrorListBoundarySyncFunction<T>,
 ): T[] | Error => {
   try {
-    const list = fn()
+    const list = function_()
     return listOrError(list)
   } catch (error: unknown) {
     return asError(error)
@@ -16,10 +16,10 @@ const errorListBoundarySync = <T>(
 }
 
 const errorListBoundary = async <T>(
-  fn: ErrorListBoundaryAsyncFn<T>,
+  function_: ErrorListBoundaryAsyncFunction<T>,
 ): Promise<T[] | Error> => {
   try {
-    return await fn().then(listOrError, asError)
+    return await function_().then(listOrError, asError)
   } catch (error: unknown) {
     return asError(error)
   }

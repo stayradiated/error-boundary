@@ -102,10 +102,6 @@ const unknownToJsonValue = (options: AnyToObjectOptions): JsonValue => {
 
       return output
     }
-
-    default: {
-      return null
-    }
   }
 }
 
