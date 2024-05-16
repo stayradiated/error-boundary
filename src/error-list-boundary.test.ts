@@ -35,7 +35,7 @@ describe('errorListBoundary', () => {
     })
   })
 
-  test('should return error (Promise.all)', async () => {
+  test('should return error when promises return errors (Promise.all)', async () => {
     const items = [3, 2, 1, -1, -2]
     const value = await errorListBoundary(async () =>
       Promise.all(
@@ -50,6 +50,25 @@ describe('errorListBoundary', () => {
     )
     expect(value).toMatchObject({
       message: 'E_MULTI: Caught 2 errors: [-1 is not >= 0, -2 is not >= 0]',
+    })
+  })
+
+  test('should return error when promises throw errors (Promise.all)', async () => {
+    const items = [3, 2, 1, -1, -2]
+    const value = await errorListBoundary(async () =>
+      Promise.all(
+        items.map(async (item) => {
+          if (item < 0) {
+            throw new Error(`${item} is not >= 0`)
+          }
+
+          return 2 ** item
+        }),
+      ),
+    )
+    // Promise.all returns only the first error
+    expect(value).toMatchObject({
+      message: '-1 is not >= 0',
     })
   })
 })
